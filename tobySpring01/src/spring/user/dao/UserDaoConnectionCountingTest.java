@@ -17,7 +17,7 @@ public class UserDaoConnectionCountingTest {
 		user.setId("countMan4");
 		user.setName("kimMinSu");
 		user.setPassword("1234");
-		
+		 
 		//dao 함수 호출
 		dao.add(user);	//카운팅 1개 추가
 		dao.get("countMan2");	//카운팅 1개 추가
