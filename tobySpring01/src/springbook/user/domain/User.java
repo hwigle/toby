@@ -1,4 +1,4 @@
-package spring.user.domain;
+package springbook.user.domain;
 
 public class User {
 	String id;
@@ -24,3 +24,4 @@ public class User {
 		this.password = password;
 	}
 }
+
