@@ -4,20 +4,25 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
+import javax.sql.DataSource;
 import springbook.user.domain.User;
 
 public class UserDao {
-	//DB 커넥션 관심을 인터페이스로 추상화하여 사용
-	private ConnectionMaker connectionMaker;
+	//주입될 의존 오브젝트 타입
+	private DataSource dataSource;
+	//생성자 방식 DI
+    //public UserDao(ConnectionMaker connectionMaker){
+    //	this.connectionMaker = connectionMaker;
+    //}
+    
+    //수정자 메소드 방식 DI
+    public void setDataSource(DataSource dataSource){
+    	this.dataSource = dataSource;
+    }
 	
-	public UserDao(ConnectionMaker connectionMaker) {
-		//UserDao 생성시 파라미터로 넘어온 ConnectionMaker 타입의 클래스를 넣어줌
-		this.connectionMaker = connectionMaker;
-	}
-	
-	public void add(User user) throws ClassNotFoundException, SQLException {
-		Connection c = connectionMaker.makeConnection();
+	public void add(User user) throws SQLException {
+		// DB 커넥션을 가져오는 코드
+		Connection c = dataSource.getConnection();
 		// SQL을 담을 PreparedStatement 만들기
 		PreparedStatement ps = c.prepareStatement("insert into users(id,name,password) value(?,?,?)");
 		ps.setString(1, user.getId());
@@ -32,8 +37,8 @@ public class UserDao {
 		c.close();
 	}
 
-	public User get(String id) throws ClassNotFoundException, SQLException {
-		Connection c = connectionMaker.makeConnection();
+	public User get(String id) throws SQLException {
+		Connection c = dataSource.getConnection();
 
 		// SQL을 담을 PreparedStatement 만들기
 		PreparedStatement ps = c.prepareStatement("select * from users where id = ?");
