@@ -5,6 +5,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import javax.sql.DataSource;
+
+import org.springframework.dao.EmptyResultDataAccessException;
+
 import springbook.user.domain.User;
 
 public class UserDao {
@@ -36,7 +39,7 @@ public class UserDao {
 		ps.close();
 		c.close();
 	}
-
+	// 데이터를 찾지 못하면 예외를 발생시키도록 수정한 get() 메소드	
 	public User get(String id) throws SQLException {
 		Connection c = dataSource.getConnection();
 
@@ -46,19 +49,22 @@ public class UserDao {
 
 		// 실행결과를 ResultSet에 담기
 		ResultSet rs = ps.executeQuery();
-		rs.next();
-
-		// 정보를 User객체에 담기
-		User user = new User();
-		user.setId(rs.getString("id"));
-		user.setName(rs.getString("name"));
-		user.setPassword(rs.getString("password"));
+		
+		User user = null; // User는 null 상태로 초기화
+	    if(rs.next()){ // id를 조건으로 한 쿼리의 결과가 있으면 User 오브젝트를 만들고 값을 넣는다.
+	        user = new User();
+	        user.setId(rs.getString("id"));
+	        user.setName(rs.getString("name"));
+	        user.setPassword(rs.getString("password"));
+	    }
 
 		// 리소스 닫아주기
 		rs.close();
 		ps.close();
 		c.close();
-
+		
+		if(user == null) throw new EmptyResultDataAccessException(1);
+		
 		return user;
 	}
 	
