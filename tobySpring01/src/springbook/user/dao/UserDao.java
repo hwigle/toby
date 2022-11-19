@@ -23,6 +23,22 @@ public class UserDao {
     	this.dataSource = dataSource;
     }
 	
+    public void jdbcContextWithStatementStrategy(StatementStrategy stmt) throws SQLException{
+        Connection c = null;
+        PreparedStatement ps = null;
+             
+        try {
+            c = dataSource.getConnection();
+            ps = stmt.makePreparedStatement(c);
+            ps.executeUpdate();
+        } catch(SQLException e) {
+            throw e;
+        } finally {
+            if(ps!=null) {try {ps.close();} catch(SQLException e) {}}
+            if(c!=null) {try {ps.close();} catch(SQLException e) {}}
+        }
+    }
+    
 	public void add(User user) throws SQLException {
 		// DB 커넥션을 가져오는 코드
 		Connection c = dataSource.getConnection();
@@ -69,30 +85,46 @@ public class UserDao {
 	}
 	
 	public void deleteAll() throws SQLException {
-	    Connection c = dataSource.getConnection();
-	    	
-	    PreparedStatement ps = c.prepareStatement("delete from users");
-	    	
-	    ps.executeUpdate();
-	    	
-	    ps.close();
-	    c.close();
+	    StatementStrategy st = new DeleteAllStatement();    //전략 인스턴스 생성
+	    jdbcContextWithStatementStrategy(st);    //컨텍스트에 전략 인스턴스 인자로 호출
 	}
 	    
 	public int getCount() throws SQLException{
-	    Connection c = dataSource.getConnection();
-	    	
-	    PreparedStatement ps = c.prepareStatement("select count(*) from users");
-	    	
-	   	ResultSet rs = ps.executeQuery();
-	   	rs.next();
-	   	int count = rs.getInt(1);
-	   	
-	   	rs.close();
-	  	ps.close();
-	   	c.close();
-	    	
-	    return count;
+		Connection c = null;
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+
+		try { // 예외 발생 가능성이 있는 코드를 try 블록으로 묶는다.
+
+			c = dataSource.getConnection();
+			ps = c.prepareStatement("select count(*) from users");
+			
+			rs = ps.executeQuery(); // ResultSet도 다양한 SQL Exception이 
+			rs.next();				// 발생할 수 있는 코드이므 try 블록 안에 둬야 한다.
+			return rs.getInt(1);
+			
+		} catch (SQLException e) { 
+			throw e; 
+		} finally { 
+			if (rs != null) { //만들어진 ResultSet을 닫아주는 기능
+				try {
+					rs.close(); // close()는 만들어진 순서의 반대로 하는 것이 원칙
+				} catch (SQLException e) { 
+				}
+			}
+			if (ps != null) {
+				try {
+					ps.close();
+				} catch (SQLException e) { 
+				}
+			}
+			if (c != null) {
+				try {
+					c.close();
+				} catch (SQLException e) {
+				}
+			}
+		}
 	}
 	//DB 연결과 관련된 관심사 코드 분리
 	//public abstract Connection getConnection() throws ClassNotFoundException, SQLException;
