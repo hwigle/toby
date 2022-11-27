@@ -20,8 +20,8 @@ public class DaoFactory {
 	}
 	
 	@Bean  
-	public UserDao userDao() { // UserDao타입 오브젝트를 생성하고 초기화
-		UserDao userDao = new UserDao();
+	public UserDaoJdbc userDao() { // UserDao타입 오브젝트를 생성하고 초기화
+		UserDaoJdbc userDao = new UserDaoJdbc();
 		userDao.setDataSource(dataSource());
 		return userDao;
 	}
