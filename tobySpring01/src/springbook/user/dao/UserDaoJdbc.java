@@ -1,18 +1,16 @@
 package springbook.user.dao;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
 import javax.sql.DataSource;
 
-import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.core.RowMapper;
 
+import springbook.user.domain.Level;
 import springbook.user.domain.User;
 
 public class UserDaoJdbc implements UserDao{
@@ -42,41 +40,20 @@ public class UserDaoJdbc implements UserDao{
 				user.setId(rs.getString("id"));
 				user.setName(rs.getString("name"));
 				user.setPassword(rs.getString("password"));
+				user.setLevel(Level.valueOf(rs.getInt("level")));
+				user.setLogin(rs.getInt("login"));
+				user.setRecommend(rs.getInt("recommend"));
 				return user;
 			}
 		};
 	// jdbc 작업 흐름 분리해서 만든 클래스
 	//private JdbcContext jdbcContext;
-		
-	public void jdbcContextWithStatementStrategy(StatementStrategy stmt) throws SQLException {
-		Connection c = null;
-		PreparedStatement ps = null;
 
-		try {
-			c = dataSource.getConnection();
-			ps = stmt.makePreparedStatement(c);
-			ps.executeUpdate();
-		} catch (SQLException e) {
-			throw e;
-		} finally {
-			if (ps != null) {
-				try {
-					ps.close();
-				} catch (SQLException e) {
-				}
-			}
-			if (c != null) {
-				try {
-					ps.close();
-				} catch (SQLException e) {
-				}
-			}
-		}
-	}
 	
-	public void add(final User user) {
-		this.jdbcTemplate.update("insert into users(id, name, password) values(?,?,?)",
-						user.getId(), user.getName(), user.getPassword());
+	public void add(User user) {
+		this.jdbcTemplate.update(
+				"insert into users(id, name, password, level, login, recommend) " + "values(?,?,?,?,?,?)", user.getId(),
+				user.getName(), user.getPassword(), user.getLevel().intValue(), user.getLogin(), user.getRecommend());
 	}
 
 	public User get(String id) {
