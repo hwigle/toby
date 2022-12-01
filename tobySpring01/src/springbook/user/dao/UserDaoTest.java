@@ -106,6 +106,28 @@ public class UserDaoTest {
 		dao.get("unknown.id"); // 이 메소드 실행 중에 예외가 발생 -> 예외 미발생시 테스트 실패
 	}
 	
+	@Test
+	public void update() {
+		dao.deleteAll();
+		
+		dao.add(user1);		// 수정할 사용자
+		dao.add(user2);		// 수정하지 않을 사용자
+		
+		user1.setName("김민재");
+		user1.setPassword("springno6");
+		user1.setLevel(Level.GOLD);
+		user1.setLogin(1000);
+		user1.setRecommend(999);
+		
+		dao.update(user1);
+		
+		User user1update = dao.get(user1.getId());
+		checkSameUser(user1, user1update);
+		User user2same = dao.get(user2.getId());
+		checkSameUser(user2, user2same);
+	}
+	
+	
     //@Test어노테이션 메소드를 실행하기 위해 최초 main 작성
     public static void main(String[] args) {
         JUnitCore.main("springbook.user.dao.UserDaoTest");
